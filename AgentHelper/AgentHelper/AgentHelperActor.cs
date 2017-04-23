@@ -31,7 +31,7 @@ namespace AgentHelper
             seniorAgentActor.Tell(new NewAgentHelperMessage("agent"+priority, ""), Self);
             
             //получаем сообщение-список от главного агента:
-            Receive<AddressListMessage>(msg =>
+            Receive<ZippedAddressListMessage>(msg =>
             {
                 Console.WriteLine("The entire list");
                 //обновляем список:

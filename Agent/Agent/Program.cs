@@ -20,6 +20,7 @@ namespace Agent
         akka {{  
             actor {{
                 provider = ""Akka.Remote.RemoteActorRefProvider, Akka.Remote""
+                serialize-messages = on
             }}
             remote {{
                 helios.tcp

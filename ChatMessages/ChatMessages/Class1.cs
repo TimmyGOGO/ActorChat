@@ -55,9 +55,9 @@ namespace ChatMessages
     {
         public int ID { get; private set; }
         public string name { get; private set; }
-        public string address { get; private set; }
+        public IActorRef address { get; private set; }
 
-        public recordItem(int _id, string _name, string _addr)
+        public recordItem(int _id, string _name, IActorRef _addr)
         {
             ID = _id;
             name = _name;
@@ -73,7 +73,7 @@ namespace ChatMessages
 
         public override string ToString()
         {
-            return String.Format("{0} {1} {2}", ID, name, address);
+            return String.Format("{0} {1} {2}", ID, name, address.Path.ToString());
         }
     }
 

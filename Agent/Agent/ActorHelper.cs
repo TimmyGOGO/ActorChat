@@ -21,13 +21,11 @@ namespace Agent
         int count; //подсчет
         IActorRef chiefAgent; //главный агент
         List<recordItem> agentList; //список для агентов
-        List<recordItem> fullList; //список всех участников чата 
 
         public ActorHelper()
         {
             count = 0;
             agentList = new List<recordItem>();
-            fullList = new List<recordItem>();
 
             //получить сообщение на создание помощников:
             Receive<CreateHelpersMessage>(msg =>
@@ -48,7 +46,7 @@ namespace Agent
             Receive<NewAgentHelperMessage>(msg =>
             {
                 Console.WriteLine(msg.name + " " + Sender.Path.ToString() + " || " + (count+1) + "/" + N);
-                agentList.Add(new recordItem(fromId + count, msg.name, Serialization.SerializedActorPath(Sender)));
+                agentList.Add(new recordItem(fromId + count, msg.name, Sender));
                 count++;
 
                 //следить за агентом:
@@ -72,11 +70,10 @@ namespace Agent
                 
                 
                 //скопируем все данные из сообщения:
-                fullList = new List<recordItem>();
                 List<string> temp = new List<string>();
                 foreach (recordItem i in msg.Values)
                 {
-                    fullList.Add(i);
+                    temp.Add(i.ID + " " + i.name + " " + Serialization.SerializedActorPath(i.address));
                 }
 
                 //рассылаем список всем агентам:
@@ -85,9 +82,7 @@ namespace Agent
                     //i.address.Tell(new AddressListMessage(fullList), Self);
                     Console.WriteLine(i.address);
 
-
-
-                    Context.ActorSelection(i.address).Tell(new ZippedAddressListMessage(), Self);
+                    i.address.Tell(new ZippedAddressListMessage(temp), Self);
                     //ResolveActorRef(id)i.address.Tell(new NewAgentHelperMessage("Bullshit", ""), Self);
                 }
                 
