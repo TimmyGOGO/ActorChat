@@ -40,7 +40,8 @@
       <HintPath>..\packages\Akka.Remote.1.1.3\lib\net45\Akka.Remote.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ChatMessages">
+    <Reference Include="ChatMessages, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\ChatMessages\ChatMessages\bin\Debug\ChatMessages.dll</HintPath>
     </Reference>
     <Reference Include="Google.ProtocolBuffers, Version=2.4.1.555, Culture=neutral, PublicKeyToken=55f7125234beb589, processorArchitecture=MSIL">

@@ -64,17 +64,16 @@ namespace ChatMessages
             address = _addr;
         }
 
-        
-        //public recordItem(recordItem item)
+
+        //public static ZippedAddressListMessage zipToMessage(List<recordItem> l)
         //{
-        //    this.ID = item.ID;
-        //    this.name = item.name;
-        //    this.address = item.address;
+        //    List<string> temp = new List<string>();
+            
         //}
 
         public override string ToString()
         {
-            return String.Format("{0} {1} {2}", ID, name, address.ToString());
+            return String.Format("{0} {1} {2}", ID, name, address);
         }
     }
 
@@ -89,6 +88,18 @@ namespace ChatMessages
         }
 
         public IReadOnlyCollection<recordItem> Values { get; private set; }
+
+    }
+
+    //сообщение: сжатый список адресов
+    public class ZippedAddressListMessage
+    {
+        public ZippedAddressListMessage(List<string> list)
+        {
+            this.Values = list.AsReadOnly();
+        }
+
+        public IReadOnlyCollection<string> Values { get; private set; }
 
     }
 

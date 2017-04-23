@@ -39,7 +39,7 @@ namespace AgentHelper
                 //foreach (recordItem i in msg.Values)
                 //{
                 //    Console.WriteLine(i.ToString());
-                //    fullList.Add(i);
+                //    //fullList.Add(i);
                 //}
                
                 /*

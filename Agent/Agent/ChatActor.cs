@@ -54,7 +54,7 @@ namespace Agent
                 Nhelpers = msg.N;
                 actorHelper = Context.ActorOf(Props.Create<ActorHelper>(), "ActorHelper");
                 actorHelper.Tell(new CreateHelpersMessage(Nhelpers, ID), Self);
-                ID += Nhelpers;
+                ID += Nhelpers; //освобождает ID для помощников
 
             });
 

@@ -7,6 +7,9 @@ using System.Text;
 using System.Threading.Tasks;
 using ChatMessages;
 using System.Diagnostics;
+using Akka.Serialization;
+using Akka.Actor.Internal;
+using Akka.Remote;
 
 namespace Agent
 {
@@ -45,7 +48,7 @@ namespace Agent
             Receive<NewAgentHelperMessage>(msg =>
             {
                 Console.WriteLine(msg.name + " " + Sender.Path.ToString() + " || " + (count+1) + "/" + N);
-                agentList.Add(new recordItem(fromId + count, msg.name, Sender));
+                agentList.Add(new recordItem(fromId + count, msg.name, Serialization.SerializedActorPath(Sender)));
                 count++;
 
                 //следить за агентом:
@@ -70,17 +73,22 @@ namespace Agent
                 
                 //скопируем все данные из сообщения:
                 fullList = new List<recordItem>();
+                List<string> temp = new List<string>();
                 foreach (recordItem i in msg.Values)
                 {
                     fullList.Add(i);
                 }
-                
-                
+
                 //рассылаем список всем агентам:
                 foreach (recordItem i in agentList)
                 {
                     //i.address.Tell(new AddressListMessage(fullList), Self);
-                    i.address.Tell(new NewAgentHelperMessage("Bullshit", ""), Self);
+                    Console.WriteLine(i.address);
+
+
+
+                    Context.ActorSelection(i.address).Tell(new ZippedAddressListMessage(), Self);
+                    //ResolveActorRef(id)i.address.Tell(new NewAgentHelperMessage("Bullshit", ""), Self);
                 }
                 
 
