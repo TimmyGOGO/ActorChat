@@ -29,6 +29,7 @@ namespace AgentHelper
                     //адрес актора "Главного агента" (arg[0]) и имя (arg[1]):
 
                     var localChatActor = actorSystem.ActorOf(Props.Create<AgentHelperActor>(args[0], args[1]), "AgentHelperActor");
+                    //var localChatActor = actorSystem.ActorOf(Props.Create<AgentHelperActor>("akka.tcp://Agent@localhost:8000/user/AgentActor/ActorHelper", 2+""), "AgentHelperActor");
 
                     string line = string.Empty;
                     while (line != null)
@@ -37,16 +38,16 @@ namespace AgentHelper
 
                         //проверка сообщения:
                         //1.проверка имени:
-                        string[] splits = line.Split(new Char[] { '#' });
-                        if (splits[1].Contains("agent") != true)
-                        {
-                            localChatActor.Tell(line);
+                        //string[] splits = line.Split(new Char[] { '#' });
+                        //if (splits[1].Contains("agent") != true)
+                        //{
+                        //    localChatActor.Tell(line);
 
-                        }
-                        else
-                        {
-                            Console.WriteLine("Change the name! It mustn't contain word 'agent'!");
-                        }
+                        //}
+                        //else
+                        //{
+                        //    Console.WriteLine("Change the name! It mustn't contain word 'agent'!");
+                        //}
 
                     }
 

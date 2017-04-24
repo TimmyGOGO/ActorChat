@@ -10,6 +10,8 @@ using System.Diagnostics;
 using Akka.Serialization;
 using Akka.Actor.Internal;
 using Akka.Remote;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Agent
 {
@@ -30,13 +32,14 @@ namespace Agent
             //получить сообщение на создание помощников:
             Receive<CreateHelpersMessage>(msg =>
             {
+
                 chiefAgent = Sender;
                 fromId = msg.fromID;
                 N = msg.N;
 
                 for (int i = 0; i < msg.N; i++)
                 {
-                    Process.Start("C:\\Users\\Artemij\\Source\\Repos\\Client\\AgentHelper\\AgentHelper\\bin\\Debug\\AgentHelper.exe",
+                    Process.Start("C:\\Users\\Artemij\\Source\\Repos\\ActorChat\\AgentHelper\\AgentHelper\\bin\\Debug\\AgentHelper.exe",
                                     "akka.tcp://Agent@localhost:8000/user/AgentActor/ActorHelper" + " " + i);
                 }
             
@@ -45,6 +48,7 @@ namespace Agent
             //получить сообщение идентификации: от нового помощника агента
             Receive<NewAgentHelperMessage>(msg =>
             {
+                Console.WriteLine("Received message from agentHelper!");
                 Console.WriteLine(msg.name + " " + Sender.Path.ToString() + " || " + (count+1) + "/" + N);
                 agentList.Add(new recordItem(fromId + count, msg.name, Sender));
                 count++;
@@ -63,30 +67,41 @@ namespace Agent
 
             });
 
+            
+            //Receive<Terminated>(msg =>
+            //{
+            //    int tempID = 0;
+            //    foreach(recordItem i in agentList){
+            //        if(i.address == msg.ActorRef){
+            //            tempID = i.ID;
+            //            fromId = msg.fromID;
+            //            N = msg.N;
+
+            //            for (int i = 0; i < msg.N; i++)
+            //            {
+            //                Process.Start("C:\\Users\\Artemij\\Source\\Repos\\ActorChat\\AgentHelper\\AgentHelper\\bin\\Debug\\AgentHelper.exe",
+            //                                "akka.tcp://Agent@localhost:8000/user/AgentActor/ActorHelper" + " " + i);
+            //            }
+            //        }
+            //    }
+
+
+                
+
+            //});
+
             //передача списка агентам-помощникам:
             Receive<AddressListMessage>(msg =>
             {
                 Console.WriteLine("All is ready");
-                
-                
-                //скопируем все данные из сообщения:
-                List<string> temp = new List<string>();
-                foreach (recordItem i in msg.Values)
-                {
-                    temp.Add(i.ID + " " + i.name + " " + Serialization.SerializedActorPath(i.address));
-                }
 
                 //рассылаем список всем агентам:
                 foreach (recordItem i in agentList)
                 {
-                    //i.address.Tell(new AddressListMessage(fullList), Self);
+                    i.address.Tell(new AddressListMessage(msg.Values.ToList<recordItem>()), Self);
                     Console.WriteLine(i.address);
-
-                    i.address.Tell(new ZippedAddressListMessage(temp), Self);
-                    //ResolveActorRef(id)i.address.Tell(new NewAgentHelperMessage("Bullshit", ""), Self);
+                    
                 }
-                
-
 
             });
 

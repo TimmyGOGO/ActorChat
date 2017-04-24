@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Akka.Actor;
+using System.Collections;
+using System.Runtime.Serialization;
 
 namespace ChatMessages
 {
@@ -51,7 +53,8 @@ namespace ChatMessages
     }
 
     //класс для строчки общего списка адресов:
-    public class recordItem
+    [Serializable()]
+    public class recordItem: ISerializable
     {
         public int ID { get; private set; }
         public string name { get; private set; }
@@ -64,16 +67,17 @@ namespace ChatMessages
             address = _addr;
         }
 
-
-        //public static ZippedAddressListMessage zipToMessage(List<recordItem> l)
-        //{
-        //    List<string> temp = new List<string>();
-            
-        //}
-
         public override string ToString()
         {
             return String.Format("{0} {1} {2}", ID, name, address.Path.ToString());
+        }
+
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("recordID", this.ID);
+            info.AddValue("recordName", this.name);
+            info.AddValue("recordAddress", this.address.ToString());
+            
         }
     }
 
@@ -94,12 +98,14 @@ namespace ChatMessages
     //сообщение: сжатый список адресов
     public class ZippedAddressListMessage
     {
-        public ZippedAddressListMessage(List<string> list)
+        public ZippedAddressListMessage(byte[] array)
         {
-            this.Values = list.AsReadOnly();
+            values = new byte[array.Length];
+            array.CopyTo(values, 0);
+        
         }
 
-        public IReadOnlyCollection<string> Values { get; private set; }
+        public byte[] values;
 
     }
 

@@ -22,14 +22,33 @@ namespace AgentHelper
         {
             //создание пустого списка:
             fullList = new List<recordItem>();
-            
-            //обработка аргументов:
-            seniorAgentActor = Context.ActorSelection(addressSenior);
-            Int32.TryParse(rank, out priority);
-            
-            //сообщаем о себе актору главного агента:
-            seniorAgentActor.Tell(new NewAgentHelperMessage("agent"+priority, ""), Self);
-            
+
+            Console.WriteLine("Tell the chief about yourself.");
+
+            try
+            {
+                //обработка аргументов:
+                seniorAgentActor = Context.ActorSelection(addressSenior);
+                Int32.TryParse(rank, out priority);
+
+                //сообщаем о себе актору главного агента:
+                seniorAgentActor.Tell(new NewAgentHelperMessage("agent" + priority, ""), Self);
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
+            Receive<AddressListMessage>(msg =>
+            {
+                Console.WriteLine("Our beloved list:");
+                foreach (recordItem i in msg.Values)
+                {
+                    Console.WriteLine(i.ToString());
+                }
+            });
+
             //получаем сообщение-список от главного агента:
             Receive<ZippedAddressListMessage>(msg =>
             {
