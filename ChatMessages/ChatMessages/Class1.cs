@@ -67,9 +67,17 @@ namespace ChatMessages
             address = _addr;
         }
 
+        public recordItem(recordItem item)
+        {
+            ID = item.ID;
+            name = item.name;
+            address = item.address;
+        }
+
         public override string ToString()
         {
-            return String.Format("{0} {1} {2}", ID, name, address.Path.ToString());
+            string _addr = (this.address == null) ? "none" : this.address.Path.ToString();
+            return String.Format("{0} {1} {2}", ID, name, _addr);
         }
 
         public void GetObjectData(SerializationInfo info, StreamingContext context)
@@ -261,6 +269,22 @@ namespace ChatMessages
         public override string ToString()
         {
             return this.ID + " " + this.name;
+        }
+    }
+
+    //Сообщение "я в чате" (данные клиента, который вошел в чат)
+    public class NewClientEnterMessage
+    {
+        public NewClientEnterMessage(recordItem item)
+        {
+            this.rItem = new recordItem(item.ID, item.name, item.address);
+        }
+
+        public recordItem rItem { get; private set; }
+
+        public override string ToString()
+        {
+            return this.rItem.ToString();
         }
     }
 

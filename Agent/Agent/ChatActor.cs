@@ -58,7 +58,7 @@ namespace Agent
 
             });
 
-            //сообщение "помощники агента":
+            //сообщение от "помощников агента":
             Receive<AddressListMessage>(msg =>
             {
                 //добавляем данные помощников:
@@ -78,14 +78,24 @@ namespace Agent
                 //нужно изменить статус клиента и разослать список
                 //проверяем что такой клиент зарегистрирован по его ID и имени:
                 //гарантировано, что такой клиент в списке только один
-
+                Console.WriteLine("I've got LoginMessage!");
                 for (int i = 0; i < fullList.Count; i++)
                 {
                     if (fullList[i].name == msg.name && fullList[i].ID == msg.ID)
                     {
+                        //удалить из списка данный элемент:
                         fullList.Remove(fullList[i]);
-                        recordItem curr = new recordItem(ID, msg.name, Sender);
+                        //вставить новый с такими же ID и name, и новым адресом:
+                        recordItem curr = new recordItem(msg.ID, msg.name, Sender);
                         fullList.Add(curr);
+
+                        //Изменения в списке:
+                        Console.WriteLine("List's been changed!");
+                        foreach (recordItem f in fullList)
+                        {
+                            Console.WriteLine(f.ToString());
+                        }
+
                         Sender.Tell(new AddressListMessage(fullList), Self);
                         break;
                     }
@@ -95,7 +105,7 @@ namespace Agent
 
             });
 
-            //выход клиента из чата!!!!неправильно!!!
+            //выход клиента из чата!!!!неправильно: разослать список!!!
             Receive<LogOutMessage>(msg =>
             {
                 //нужно изменить статус клиента и разослать список

@@ -144,7 +144,7 @@ namespace Client
             {
                 if (clientID != -1) //если клиент зарегистрирован
                 {
-                    ActorSelection linkPoint = Context.ActorSelection("akka.tcp://Agent@localhost:8000/user/AgentActor");
+                    ActorSelection linkPoint = Context.ActorSelection(agentAddress);
                     linkPoint.Tell(new LoginMessage(this.clientID, this.clientName), Self);
                     Console.WriteLine("Login message has been sent!");
                 }
@@ -172,7 +172,7 @@ namespace Client
 
             });
 
-            // Получение списка адресов.
+            // Получение списка адресов (после входа в чат)
             Receive<AddressListMessage>(msg =>
             {
                 addressList.Clear();
@@ -180,11 +180,38 @@ namespace Client
 
                 foreach (recordItem i in msg.Values)
                 {
-                    Console.WriteLine(i.ToString());
-                    addressList.Add(i);
-                    Context.Watch(i.address);
+
+                    //добавление клиентов в список, если:
+                    //есть адрес - т.е. клиент онлайн
+                    if (i.address != null)
+                    {
+                        Console.WriteLine(i.ToString());
+                        addressList.Add(i);
+
+                        //рассылаем другим агентам свои данные:
+                        if (i.ID != this.clientID && i.name != this.clientName)
+                        {
+                            i.address.Tell(new NewClientEnterMessage(new recordItem(this.clientID, this.clientName, Self)));
+                        } 
+                        
+                    }
+
                 }
             });
+
+            //получение сообщения, что новый клиент вошел в чат:
+            Receive<NewClientEnterMessage>(msg =>
+            {
+                Console.WriteLine("I've got: " + msg.rItem.ToString());
+                addressList.Add(msg.rItem);
+                Console.WriteLine("Updated addressList:");
+                foreach (recordItem i in addressList)
+                {
+                    Console.WriteLine(i.ToString());
+                }
+
+            });
+
 
         }
 
