@@ -71,6 +71,42 @@ namespace Agent
                 Sender.Tell(new AddressListMessage(fullList), Self);
 
             });
+
+            //Обработка сообщения входа в чат:
+            Receive<LoginMessage>(msg =>
+            {
+                //нужно изменить статус клиента и разослать список
+                //проверяем что такой клиент зарегистрирован по его ID и имени:
+                //гарантировано, что такой клиент в списке только один
+
+                for (int i = 0; i < fullList.Count; i++)
+                {
+                    if (fullList[i].name == msg.name && fullList[i].ID == msg.ID)
+                    {
+                        fullList.Remove(fullList[i]);
+                        recordItem curr = new recordItem(ID, msg.name, Sender);
+                        fullList.Add(curr);
+                        Sender.Tell(new AddressListMessage(fullList), Self);
+                        break;
+                    }
+
+                }
+
+
+            });
+
+            //выход клиента из чата!!!!неправильно!!!
+            Receive<LogOutMessage>(msg =>
+            {
+                //нужно изменить статус клиента и разослать список
+
+                if (isThisObjectRegistered(msg.name) == true)
+                {
+                    Sender.Tell(new LogOutMessage(ID, msg.name), Self);
+                }
+
+
+            });
             
         }
 

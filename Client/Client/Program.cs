@@ -39,7 +39,7 @@ namespace Client
                             //1.проверка имени:
                             string[] splits = line.Split(new Char[] { '#' });
 
-                            if (splits[0] == "reg")
+                            if (splits[0] == "reg") //зарегистрироваться
                             {
                                 if (splits[1].Contains("agent") != true)
                                 {
@@ -50,9 +50,19 @@ namespace Client
                                     Console.WriteLine("Change the name! It mustn't contain word 'agent'!");
                                 }
                             }
-                            else
+                            else if (splits[0] == "logout") //выход из чата
                             {
-                                localChatActor.Tell(new WriteMessage(line));
+                                localChatActor.Tell(new LogOutMessage(0, splits[0]));
+                                
+                            }
+                            else if (splits[0] == "login") //вход в чат
+                            {
+                                localChatActor.Tell(new LoginMessage(0, splits[0]));
+                               
+                            }
+                            else //написать сообщение в чат:
+                            {
+                                localChatActor.Tell(new WriteMessage(line)); 
                             }
                         }
                     }

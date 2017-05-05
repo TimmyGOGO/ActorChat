@@ -227,4 +227,41 @@ namespace ChatMessages
         public string text { get; private set; }
     }
 
+    //-----------------------------------
+    //Настя Боброва
+    //-----------------------------------
+    //Сообщение входа в чат
+    public class LoginMessage
+    {
+        public LoginMessage(int _ID, string _name)
+        {
+            this.ID = _ID;
+            this.name = _name;
+        }
+        public int ID { get; private set; }
+        public string name { get; private set; }
+
+        public override string ToString()
+        {
+            return this.ID + " " + this.name;
+        }
+    }
+
+    //сообщение выхода из чата
+    public class LogOutMessage
+    {
+        public LogOutMessage(int _ID, string _name)
+        {
+            this.ID = _ID;
+            this.name = _name;
+        }
+        public int ID { get; private set; }
+        public string name { get; private set; }
+
+        public override string ToString()
+        {
+            return this.ID + " " + this.name;
+        }
+    }
+
 }

@@ -41,7 +41,7 @@ namespace Client
                     var remoteChatActor = Context.ActorSelection(addressList.ElementAt(0).address.ToString());
                     remoteChatActor.Tell(new RequestForHistoryMessage());
                 }
-                else if (message == "Exit")
+                else if (message == "Exit") //Выход?
                 {
                     ActorSelection linkPoint = Context.ActorSelection(agentAddress);
                     linkPoint.Tell(new ExitMessage(clientName));
@@ -136,6 +136,39 @@ namespace Client
             {
                 Console.WriteLine(t.ToString());
                 Console.WriteLine("Main agent has been switched off!");
+
+            });
+
+            //Сообщение входа в чат
+            Receive<LoginMessage>(msg =>
+            {
+                if (clientID != -1) //если клиент зарегистрирован
+                {
+                    ActorSelection linkPoint = Context.ActorSelection("akka.tcp://Agent@localhost:8000/user/AgentActor");
+                    linkPoint.Tell(new LoginMessage(this.clientID, this.clientName), Self);
+                    Console.WriteLine("Login message has been sent!");
+                }
+                else
+                {
+                    Console.WriteLine("You must be registered in order to enter the chat!");
+                }
+
+
+            });
+
+            //выход клиента из чата
+            Receive<LogOutMessage>(msg =>
+            {
+                if (clientID != -1) //если клиент зарегистрирован
+                {
+                    ActorSelection linkPoint = Context.ActorSelection("akka.tcp://Agent@localhost:8000/user/AgentActor");
+                    linkPoint.Tell(new LogOutMessage(this.clientID, this.clientName), Self);
+                    Console.WriteLine("Logout message has been sent!");
+                }
+                else
+                {
+                    Console.WriteLine("You must be registered!");
+                }
 
             });
 
