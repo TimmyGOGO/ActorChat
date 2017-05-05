@@ -110,8 +110,121 @@ namespace ChatMessages
     }
 
     //-----------------------------------
-    //Юля Журавлева
+    //Юлия Журавлева
     //-----------------------------------
 
+    // Класс представления строки истории сообщений
+    // В дальнейшем должен появиться класс-контейнер (будет доступ к последнему используемому номеру сообщения)
+    public class historyItem
+    {
+        public int number;
+        public string text;
+
+        public historyItem(int _number, string _text)
+        {
+            this.number = _number;
+            this.text = _text;
+        }
+
+        public historyItem()
+        {
+            this.number = -1;
+            this.text = "Text";
+        }
+
+        public override string ToString()
+        {
+            return String.Format("{0} {1}", this.number, this.text);
+        }
+
+    }
+
+
+
+    public class NewClientMessage
+    {
+        public NewClientMessage(string _name)
+        {
+            name = _name;
+        }
+
+        public string name { get; private set; }
+    }
+
+    // Сообщение из Program актору.
+    public class WriteMessage
+    {
+        public WriteMessage(string _text)
+        {
+            text = _text;
+        }
+
+        public string text { get; private set; }
+    }
+
+    // Сообщение от клиента клиентам.
+    public class ReadMessage
+    {
+        public ReadMessage(string _text)
+        {
+            text = _text;
+        }
+
+        public string text { get; private set; }
+    }
+
+    // Отчет о доставке.
+    public class DeliveryReportMessage
+    {
+        public DeliveryReportMessage()
+        {
+            message = "Done!";
+        }
+
+        string message;
+    }
+    // Запрос истории сообщений.
+    public class RequestForHistoryMessage
+    {
+        public RequestForHistoryMessage()
+        {
+            message = "History";
+        }
+
+        string message;
+    }
+
+    public class HistoryMessage
+    {
+        public HistoryMessage(string _history)
+        {
+            history = _history;
+        }
+
+        public string history { get; private set; }
+    }
+
+    public class ExitMessage
+    {
+        public ExitMessage(string _name)
+        {
+            name = _name;
+        }
+
+        public string name { get; private set; }
+    }
+
+    // Уведомление об ошибке.
+    public class ErrorMessage
+    {
+        public ErrorMessage(string _title, string _text)
+        {
+            title = _title;
+            text = _text;
+        }
+
+        public string title { get; private set; }
+        public string text { get; private set; }
+    }
 
 }
