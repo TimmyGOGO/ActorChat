@@ -59,6 +59,7 @@ namespace Client
                 if (splits[0] == "reg")
                 {
                     ActorSelection linkPoint = Context.ActorSelection("akka.tcp://Agent@localhost:8000/user/AgentActor");
+                    //ActorSelection linkPoint = Context.ActorSelection("akka.tcp://Agent@82.140.247.188:8000/user/AgentActor");
                     linkPoint.Tell(new RegMessage(0, splits[1]), Self);
                     
                     Console.WriteLine("Reg.application has been sent!");
