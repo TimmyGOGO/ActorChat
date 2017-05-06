@@ -12,6 +12,7 @@ using Akka.Actor.Internal;
 using Akka.Remote;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using Akka.Actor.Dsl;
 
 namespace Agent
 {
@@ -37,7 +38,7 @@ namespace Agent
                 fromId = msg.fromID;
                 N = msg.N;
 
-                for (int i = 0; i < msg.N; i++)
+                for (int i = fromId; i < msg.N; i++)
                 {
                     Process.Start("C:\\Users\\Artemij\\Source\\Repos\\ActorChat\\AgentHelper\\AgentHelper\\bin\\Debug\\AgentHelper.exe",
                                     "akka.tcp://Agent@localhost:8000/user/AgentActor/ActorHelper" + " " + i);
@@ -53,7 +54,7 @@ namespace Agent
                 agentList.Add(new recordItem(fromId + count, msg.name, Sender));
                 count++;
 
-                //следить за агентом:
+                //следить за помощником: (нужен другой способ!)
                 Context.Watch(Sender);
                 
                 //готовы ли все помощники?
@@ -101,6 +102,17 @@ namespace Agent
                     i.address.Tell(new AddressListMessage(msg.Values.ToList<recordItem>()), Self);
                     Console.WriteLine(i.address);
                     
+                }
+
+            });
+
+            //передача новой информации о клиенте помощникам:
+            Receive<NewClientEnterMessage>(msg =>
+            {
+                //рассылаем список всем агентам:
+                foreach (recordItem i in agentList)
+                {
+                    i.address.Tell(new NewClientEnterMessage(msg.rItem), Self);
                 }
 
             });

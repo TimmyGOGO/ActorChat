@@ -8,6 +8,7 @@ using System.Runtime.Remoting.Contexts;
 using System.Text;
 using System.Threading.Tasks;
 using ChatMessages;
+using Akka.Event;
 
 namespace Agent
 {
@@ -49,6 +50,11 @@ namespace Agent
             {
                 using (var actorSystem = ActorSystem.Create("Agent", config))
                 {
+                    //АКТОР, КОТОРЫЙ СЛЕДИТ ЗА МЕРТВЫМИ СООБЩЕНИЯМИ:
+                    var grimmWatcher = actorSystem.ActorOf(Props.Create<GrimmWatcherActor>(), "GrimmWatcher");
+                    actorSystem.EventStream.Subscribe(grimmWatcher, typeof(DeadLetter));
+
+                    //ОСНОВНОЙ АКТОР ДЛЯ РАБОТЫ АГЕНТА
                     var localChatActor = actorSystem.ActorOf(Props.Create<ChatActor>(), "AgentActor");
                     
                     string line = string.Empty;

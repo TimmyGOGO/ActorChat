@@ -46,29 +46,47 @@ namespace AgentHelper
                 foreach (recordItem i in msg.Values)
                 {
                     Console.WriteLine(i.ToString());
+                    
                 }
+
+                //полная передача списка:
+                fullList = msg.Values.ToList<recordItem>();
+
             });
 
-            //получаем сообщение-список от главного агента:
-            Receive<ZippedAddressListMessage>(msg =>
+            //получаем сообщение "я в чате" от главного агента:
+            Receive<NewClientEnterMessage>(msg =>
             {
-                Console.WriteLine("The entire list");
-                //обновляем список:
-                //fullList.Clear();
-                //foreach (recordItem i in msg.Values)
-                //{
-                //    Console.WriteLine(i.ToString());
-                //    //fullList.Add(i);
-                //}
-               
-                /*
-                foreach (recordItem i in fullList)
+                bool isElementFound = false;
+                //заменяем значение адреса:
+                for (int i = 0; i < fullList.Count; i++)
                 {
-                    Console.WriteLine(i.ToString());
+                    if (fullList[i].name == msg.rItem.name && fullList[i].ID == msg.rItem.ID)
+                    {
+                        //нашли элемент в списке:
+                        isElementFound = true;
+                        //удалить из списка данный элемент:
+                        fullList.Remove(fullList[i]);
+                        //вставить новый с такими же ID и name, и новым адресом:
+                        recordItem curr = new recordItem(msg.rItem.ID, msg.rItem.name, msg.rItem.address);
+                        fullList.Add(curr);
+                        break;
+                    }
+
                 }
-                */
-                //следим за основным актором:
-                //Context.Watch(Sender);
+
+                if (isElementFound == false) //если клиента в списке нет, то добавляем:
+                {
+                    recordItem curr = new recordItem(msg.rItem.ID, msg.rItem.name, msg.rItem.address);
+                    fullList.Add(curr);
+                }
+
+                //Изменения в списке:
+                Console.WriteLine("List's been changed!");
+                foreach (recordItem f in fullList)
+                {
+                    Console.WriteLine(f.ToString());
+                }
 
             });
 

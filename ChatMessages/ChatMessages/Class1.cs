@@ -103,20 +103,6 @@ namespace ChatMessages
 
     }
 
-    //сообщение: сжатый список адресов
-    public class ZippedAddressListMessage
-    {
-        public ZippedAddressListMessage(byte[] array)
-        {
-            values = new byte[array.Length];
-            array.CopyTo(values, 0);
-        
-        }
-
-        public byte[] values;
-
-    }
-
     //-----------------------------------
     //Юлия Журавлева
     //-----------------------------------

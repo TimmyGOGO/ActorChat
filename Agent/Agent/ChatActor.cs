@@ -37,7 +37,10 @@ namespace Agent
                     ID++;
                     recordItem curr = new recordItem(ID, msg.name, null);
                     fullList.Add(curr);
+                    //добавили нового клиента (гарантируется, что помощники уже созданы):
                     Sender.Tell(new RegMessage(ID, msg.name), Self);
+                    //отправляем нового клиента помощникам (передаем задачу актору для работы с помощниками):
+                    actorHelper.Tell(new NewClientEnterMessage(curr));
                 }
                 //пользователь с таким именем есть:
                 else
@@ -47,7 +50,7 @@ namespace Agent
 
             });
 
-            //сообщение: создать помощников агента:
+            //сообщение: создать помощников агента (создаются до добавления клиентов):
             Receive<CreateHelpersMessage>(msg =>
             {
                 //создать актора для работы с помощниками:
@@ -95,8 +98,11 @@ namespace Agent
                         {
                             Console.WriteLine(f.ToString());
                         }
-
+                        //отправляем список клиенту
                         Sender.Tell(new AddressListMessage(fullList), Self);
+                        
+                        //отправляем нового клиента помощникам (передаем задачу актору для работы с помощниками):
+                        actorHelper.Tell(new NewClientEnterMessage(curr));
                         break;
                     }
 
