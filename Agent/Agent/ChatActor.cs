@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ChatMessages;
+using Akka.Event;
 
 
 namespace Agent
@@ -27,7 +28,7 @@ namespace Agent
             ID = 0;
             fullList = new List<recordItem>(MAX_CAPACITY);
 
-            //обработка входящих сообщений:
+            //РЕГИСТРАЦИЯ:
             //сообщение регистрации:
             Receive<RegMessage>(msg =>
             {
@@ -50,6 +51,7 @@ namespace Agent
 
             });
 
+            //РАБОТА С ПОМОЩНИКАМИ:
             //сообщение: создать помощников агента (создаются до добавления клиентов):
             Receive<CreateHelpersMessage>(msg =>
             {
@@ -64,10 +66,13 @@ namespace Agent
             //сообщение от "помощников агента":
             Receive<AddressListMessage>(msg =>
             {
-                //добавляем данные помощников:
+                //добавляем данные помощников (если их нет еще в списке):
                 foreach (recordItem i in msg.Values)
                 {
-                    fullList.Add(i);
+                    if (!fullList.Contains(i))
+                    {
+                        fullList.Add(i);
+                    }
                 }
 
                 //отсылаем готовый полный список ActorHelper:
@@ -75,6 +80,41 @@ namespace Agent
 
             });
 
+            //поймать мертвое сообщение:
+            Receive <Debug> (msg =>
+            {
+                string[] splits = msg.ToString().Split(new Char[] { ' ' });
+                if (splits[3].Contains("Disassociated") && splits[6].Contains("AgentHelper")) //проверяем, что вылетел помощник!
+                {
+                    Console.WriteLine("{0} is Dead!", splits[6]);
+                    for(int i = 0; i < fullList.Count; i++)
+                    {
+                        if (fullList[i].address.ToString().Contains(splits[6])) //найдем мертвого помощника:
+                        {
+                            //удаляем из списка и говорим удалить его остальным:
+                            recordItem curr = new recordItem(fullList[i]);
+                            fullList.RemoveAt(i);
+
+                            //распечатать список после вылета помощника:
+                            Console.WriteLine("After fall of the helper:");
+                            foreach (recordItem f in fullList)
+                            {
+                                Console.WriteLine(f.ToString());
+                            }
+
+                            actorHelper.Tell(new HelperFailedMessage(curr));
+                            break;
+
+                        }
+
+                    }
+                }
+                
+
+            });
+
+
+            //ВХОД И ВЫХОД ИЗ ЧАТА:
             //Обработка сообщения входа в чат:
             Receive<LoginMessage>(msg =>
             {

@@ -18,7 +18,10 @@ namespace Agent
         static void Main(string[] args)
         {
             string currAddress = @"
-        akka {{  
+        akka {{
+  
+            loglevel = DEBUG        
+    
             actor {{
                 provider = ""Akka.Remote.RemoteActorRefProvider, Akka.Remote""
                 serializers {{
@@ -27,6 +30,7 @@ namespace Agent
                 serialization-bindings {{
                     ""System.Object"" = hyperion
                 }}
+
             }}
             remote {{
                 helios.tcp
@@ -50,13 +54,15 @@ namespace Agent
             {
                 using (var actorSystem = ActorSystem.Create("Agent", config))
                 {
-                    //АКТОР, КОТОРЫЙ СЛЕДИТ ЗА МЕРТВЫМИ СООБЩЕНИЯМИ:
-                    var grimmWatcher = actorSystem.ActorOf(Props.Create<GrimmWatcherActor>(), "GrimmWatcher");
-                    actorSystem.EventStream.Subscribe(grimmWatcher, typeof(DeadLetter));
+                    ////АКТОР, КОТОРЫЙ СЛЕДИТ ЗА МЕРТВЫМИ СООБЩЕНИЯМИ:
+                    //var grimmWatcher = actorSystem.ActorOf(Props.Create<GrimmWatcherActor>(), "GrimmWatcher");
+                    //actorSystem.EventStream.Subscribe(grimmWatcher, typeof(DeadLetter));
 
                     //ОСНОВНОЙ АКТОР ДЛЯ РАБОТЫ АГЕНТА
                     var localChatActor = actorSystem.ActorOf(Props.Create<ChatActor>(), "AgentActor");
-                    
+                    actorSystem.EventStream.Subscribe(localChatActor, typeof(Debug));
+                    //actorSystem.EventStream.Subscribe(localChatActor, typeof());
+
                     string line = string.Empty;
                     while (line != "exit")
                     {

@@ -1,5 +1,6 @@
 ﻿using Akka.Actor;
 using Akka.Configuration;
+using Akka.Event;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -24,6 +25,8 @@ namespace AgentHelper
             {
                 using (var actorSystem = ActorSystem.Create(actorSystemName))
                 {
+
+
                     //ВАЖНО!
                     //актор-помощник создается программно и берет аргументы из командной строки:
                     //адрес актора "Главного агента" (arg[0]) и имя (arg[1]):

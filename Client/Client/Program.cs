@@ -26,7 +26,7 @@ namespace Client
                 {
 
                     var localChatActor = actorSystem.ActorOf(Props.Create<ChatActor>(), "ChatActor");
-
+                    
 
                     if (localChatActor != null)
                     {

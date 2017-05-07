@@ -38,8 +38,14 @@ namespace Client
 
                 if (message == "History")
                 {
-                    var remoteChatActor = Context.ActorSelection(addressList.ElementAt(0).address.ToString());
-                    remoteChatActor.Tell(new RequestForHistoryMessage());
+                    foreach (recordItem c in addressList)
+                    {
+                        if (!c.name.Contains("agent") && c.ID != this.clientID && c.name != this.clientName)
+                        {
+                            c.address.Tell(new RequestForHistoryMessage());
+                            break;
+                        }
+                    }
                 }
                 else if (message == "Exit") //Выход?
                 {
@@ -56,7 +62,11 @@ namespace Client
                 {
                     foreach (recordItem i in addressList)
                     {
-                        i.address.Tell(new ReadMessage(clientName + ':' + message));
+                        if (i.name != this.clientName && i.ID != this.clientID && i.name.Contains("agent"))
+                        {
+                            i.address.Tell(new ReadMessage(clientName + ':' + message));
+                        }
+                        
                     }
 
                     currentMessage = message;
@@ -67,8 +77,9 @@ namespace Client
             Receive<ReadMessage>(msg =>
             {
                 Console.WriteLine(msg.text);
-                //addToHistory(msg.text);
-                //Sender.Tell(new DeliveryReportMessage());
+                addToHistory(msg.text);
+                Sender.Tell(new DeliveryReportMessage());
+
             });
 
             // Отчет о доставке сообщения.
@@ -88,7 +99,7 @@ namespace Client
             {
                 // выводит полученную историю на экран
                 string[] splits = msg.history.Split(new Char[] { '#' });
-                for (int i = 0; i < splits.Count(); ++i)
+                for (int i = 0; i < splits.Count(); i++)
                 {
                     Console.WriteLine(splits[i]);
                 }
@@ -243,7 +254,7 @@ namespace Client
 
         public bool checkDeliveryReportCount()
         {
-            return deliveryReportCount == addressList.Count;
+            return deliveryReportCount == addressList.Count + 1;
         }
 
         public void upgradeDeliveryReportCount()
@@ -257,6 +268,8 @@ namespace Client
                 deliveryReportCount = 0;
             }
         }
+
+
 
     }
 }

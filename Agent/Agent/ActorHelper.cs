@@ -50,12 +50,10 @@ namespace Agent
             Receive<NewAgentHelperMessage>(msg =>
             {
                 Console.WriteLine("Received message from agentHelper!");
-                Console.WriteLine(msg.name + " " + Sender.Path.ToString() + " || " + (count+1) + "/" + N);
+                Console.WriteLine(msg.name + " " + Sender.Path.ToString() + " || " + getNewID() + "/" + N);
+                
                 agentList.Add(new recordItem(fromId + count, msg.name, Sender));
                 count++;
-
-                //следить за помощником: (нужен другой способ!)
-                Context.Watch(Sender);
                 
                 //готовы ли все помощники?
                 if (count == N)
@@ -68,28 +66,6 @@ namespace Agent
 
             });
 
-            
-            //Receive<Terminated>(msg =>
-            //{
-            //    int tempID = 0;
-            //    foreach(recordItem i in agentList){
-            //        if(i.address == msg.ActorRef){
-            //            tempID = i.ID;
-            //            fromId = msg.fromID;
-            //            N = msg.N;
-
-            //            for (int i = 0; i < msg.N; i++)
-            //            {
-            //                Process.Start("C:\\Users\\Artemij\\Source\\Repos\\ActorChat\\AgentHelper\\AgentHelper\\bin\\Debug\\AgentHelper.exe",
-            //                                "akka.tcp://Agent@localhost:8000/user/AgentActor/ActorHelper" + " " + i);
-            //            }
-            //        }
-            //    }
-
-
-                
-
-            //});
 
             //передача списка агентам-помощникам:
             Receive<AddressListMessage>(msg =>
@@ -117,9 +93,55 @@ namespace Agent
 
             });
 
+            //помощник вылетел:
+            Receive<HelperFailedMessage>(msg =>
+            {
+                Console.WriteLine(msg.rItem.ToString());
+                for (int i = 0; i < agentList.Count; i++)
+                {
+                    if (agentList[i].name == msg.rItem.name)
+                    {
+                        agentList.RemoveAt(i);
+                        Console.WriteLine("AAAAAAAAAAAAAAAAAAAAAAAAAARGh!");
+                    }
+                }
+                
+                count--;
+
+                //рассылаем плохого помощника остальным агентам (гарантируется, что агентов создается как минимум два):
+                Console.WriteLine("The edited agentList:");
+                foreach (recordItem i in agentList)
+                {
+                    i.address.Tell(new HelperFailedMessage(msg.rItem), Self);
+                    Console.WriteLine(i.ToString());
+                }
+
+
+            });
 
 
             
+        }
+
+        //выдать новый ID для помощника:
+        public int getNewID()
+        {
+            int[] arr = new int[N]; //массив ID для помощников
+            //посмотрим, какого ID нет, его и выдаем:
+            foreach (recordItem i in agentList)
+            {
+                arr[i.ID] = 1;
+            }
+
+            for (int i = 0; i < N; i++)
+            {
+                if (arr[i] == 0)
+                {
+                    return i; 
+                }
+            }
+
+            return count + 1;
         }
 
     }

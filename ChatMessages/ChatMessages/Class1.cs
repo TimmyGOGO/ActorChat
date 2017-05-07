@@ -103,6 +103,23 @@ namespace ChatMessages
 
     }
 
+    //Сообщение "помощник вылетел"
+    public class HelperFailedMessage
+    {
+        public HelperFailedMessage(recordItem item)
+        {
+            this.rItem = new recordItem(item.ID, item.name, item.address);
+        }
+
+        public recordItem rItem { get; private set; }
+
+        public override string ToString()
+        {
+            return this.rItem.ToString();
+        }
+    }
+
+
     //-----------------------------------
     //Юлия Журавлева
     //-----------------------------------

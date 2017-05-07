@@ -83,7 +83,6 @@
   <ItemGroup>
     <Compile Include="ActorHelper.cs" />
     <Compile Include="ChatActor.cs" />
-    <Compile Include="GrimmWatcherActor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScopedConsoleColour.cs" />
