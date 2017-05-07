@@ -173,6 +173,33 @@ namespace ChatMessages
         public string name { get; private set; }
     }
 
+    public class RemoveClientMessage
+    {
+        public RemoveClientMessage(string _name)
+        {
+            name = _name;
+        }
+
+        public string name { get; private set; }
+    }
+
+    //Сообщение "клиент разрегистрировался" (данные клиента, который удаляет аккуант)
+    public class ClientOutMessage
+    {
+        public ClientOutMessage(recordItem item)
+        {
+            this.rItem = new recordItem(item.ID, item.name, item.address);
+        }
+
+        public recordItem rItem { get; private set; }
+
+        public override string ToString()
+        {
+            return this.rItem.ToString();
+        }
+    }
+
+
     // Сообщение из Program актору.
     public class WriteMessage
     {
@@ -226,9 +253,9 @@ namespace ChatMessages
         public string history { get; private set; }
     }
 
-    public class ExitMessage
+    public class UnregMessage
     {
-        public ExitMessage(string _name)
+        public UnregMessage(string _name)
         {
             name = _name;
         }
@@ -236,16 +263,14 @@ namespace ChatMessages
         public string name { get; private set; }
     }
 
-    // Уведомление об ошибке.
-    public class ErrorMessage
+    // Информационное сообщение.
+    public class InfoMessage
     {
-        public ErrorMessage(string _title, string _text)
+        public InfoMessage(string _text)
         {
-            title = _title;
             text = _text;
         }
 
-        public string title { get; private set; }
         public string text { get; private set; }
     }
 
@@ -290,6 +315,33 @@ namespace ChatMessages
     public class NewClientEnterMessage
     {
         public NewClientEnterMessage(recordItem item)
+        {
+            this.rItem = new recordItem(item.ID, item.name, item.address);
+        }
+
+        public recordItem rItem { get; private set; }
+
+        public override string ToString()
+        {
+            return this.rItem.ToString();
+        }
+    }
+
+    //
+    public class LogOutClientAddressListMessage
+    {
+        public LogOutClientAddressListMessage(List<recordItem> list)
+        {
+            this.Values = list.AsReadOnly();
+        }
+
+        public IReadOnlyCollection<recordItem> Values { get; private set; }
+    }
+
+    //
+    public class LogOutClientMessage
+    {
+        public LogOutClientMessage(recordItem item)
         {
             this.rItem = new recordItem(item.ID, item.name, item.address);
         }

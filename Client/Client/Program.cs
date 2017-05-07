@@ -60,6 +60,10 @@ namespace Client
                                 localChatActor.Tell(new LoginMessage(0, splits[0]));
                                
                             }
+                            else if (splits[0] == "unreg")
+                            {
+                                localChatActor.Tell(new RemoveClientMessage(splits[0]));
+                            }
                             else //написать сообщение в чат:
                             {
                                 localChatActor.Tell(new WriteMessage(line)); 

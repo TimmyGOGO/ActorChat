@@ -119,6 +119,26 @@ namespace Agent
 
             });
 
+            Receive<ClientOutMessage>(msg =>
+            {
+                //рассылаем список всем агентам:
+                foreach (recordItem i in agentList)
+                {
+                    i.address.Tell(new ClientOutMessage(msg.rItem), Self);
+                }
+
+            });
+
+            Receive<LogOutClientMessage>(msg =>
+            {
+                //рассылаем список всем агентам:
+                foreach (recordItem i in agentList)
+                {
+                    i.address.Tell(new LogOutClientMessage(msg.rItem), Self);
+                }
+
+            });
+
 
             
         }

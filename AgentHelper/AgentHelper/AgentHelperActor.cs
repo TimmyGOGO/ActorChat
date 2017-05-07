@@ -114,6 +114,56 @@ namespace AgentHelper
                 Environment.Exit(0);
             });
 
+            //получаем сообщение "удаление аккаунта клиента" от главного агента:
+            Receive<ClientOutMessage>(msg =>
+            {
+                for (int i = 0; i < fullList.Count; i++)
+                {
+                    recordItem curr = fullList[i];
+                    if (curr.name == msg.rItem.name && curr.ID == msg.rItem.ID)
+                    {
+                        //удалить из списка данный элемент:
+                        fullList.RemoveAt(i);
+                        break;
+                    }
+                }
+
+                //Изменения в списке:
+                Console.WriteLine("List's been changed!");
+                foreach (recordItem f in fullList)
+                {
+                    Console.WriteLine(f.ToString());
+                }
+
+            });
+
+            //выход
+            Receive<LogOutClientMessage>(msg =>
+            {
+                //заменяем значение адреса:
+                for (int i = 0; i < fullList.Count; i++)
+                {
+                    if (fullList[i].name == msg.rItem.name && fullList[i].ID == msg.rItem.ID)
+                    {
+                        //удалить из списка данный элемент:
+                        fullList.RemoveAt(i);
+                        //вставить новый с такими же ID и name, и новым адресом:
+                        recordItem curr = new recordItem(msg.rItem.ID, msg.rItem.name, null);
+                        fullList.Add(curr);
+                        break;
+                    }
+
+                }
+
+                //Изменения в списке:
+                Console.WriteLine("List's been changed!Agent Helper)))))))))))))))))))");
+                foreach (recordItem f in fullList)
+                {
+                    Console.WriteLine(f.ToString());
+                }
+
+            });
+
         }
 
 

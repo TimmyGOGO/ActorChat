@@ -126,6 +126,31 @@ namespace Agent
 
             });
 
+            //РАЗРЕГИСТРАЦИЯ:
+            //сообщение разрегистрации:
+            Receive<ClientOutMessage>(msg =>
+            {
+                for (int i = 0; i < fullList.Count; i++)
+                {
+                    recordItem curr = fullList[i];
+                    if (curr.name == msg.rItem.name && curr.ID == msg.rItem.ID)
+                    {
+                        fullList.RemoveAt(i);
+                        actorHelper.Tell(new ClientOutMessage(curr));
+                        break;
+                    }
+                }
+
+                //Изменения в списке:
+                Console.WriteLine("List's been changed!");
+                foreach (recordItem f in fullList)
+                {
+                    Console.WriteLine(f.ToString());
+                }
+
+                Sender.Tell(new InfoMessage("Done, your account has been deleted!"), Self);
+            });
+
             //ВХОД И ВЫХОД ИЗ ЧАТА:
             //Обработка сообщения входа в чат:
             Receive<LoginMessage>(msg =>
@@ -163,18 +188,41 @@ namespace Agent
 
             });
 
-            //выход клиента из чата!!!!неправильно: разослать список!!!
+            //выход клиента из чата
             Receive<LogOutMessage>(msg =>
             {
                 //нужно изменить статус клиента и разослать список
 
-                if (isThisObjectRegistered(msg.name) == true)
+                Console.WriteLine("I've got LogOutMessage!");
+                for (int i = 0; i < fullList.Count; i++)
                 {
-                    Sender.Tell(new LogOutMessage(ID, msg.name), Self);
+                    if (fullList[i].name == msg.name && fullList[i].ID == msg.ID)
+                    {
+                        //удалить из списка данный элемент:
+                        fullList.RemoveAt(i);
+                        //вставить новый с такими же ID и name, и новым адресом:
+                        recordItem curr = new recordItem(msg.ID, msg.name, null);
+                        fullList.Add(curr);
+
+                        //Изменения в списке:
+                        Console.WriteLine("List's been changed!");
+                        foreach (recordItem f in fullList)
+                        {
+                            Console.WriteLine(f.ToString());
+                        }
+
+                        //отправляем список чтобы разослать всем онлайн клиентам
+                        Sender.Tell(new LogOutClientAddressListMessage(fullList), Self);
+
+                        //отправляем нового клиента помощникам (передаем задачу актору для работы с помощниками):
+                        actorHelper.Tell(new LogOutClientMessage(curr));
+                        break;
+                    }
+
                 }
-
-
             });
+
+
             
         }
 

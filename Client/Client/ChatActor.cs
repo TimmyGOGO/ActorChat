@@ -36,33 +36,22 @@ namespace Client
             {
                 string message = msg.text;
 
-                if (message == "History")
+                if (message == "history")
                 {
-                    foreach (recordItem c in addressList)
+                    foreach (recordItem i in addressList)
                     {
-                        if (!c.name.Contains("agent") && c.ID != this.clientID && c.name != this.clientName)
+                        if (!i.name.Contains("agent") && !isMySelf(i))
                         {
-                            c.address.Tell(new RequestForHistoryMessage());
+                            i.address.Tell(new RequestForHistoryMessage());
                             break;
                         }
-                    }
-                }
-                else if (message == "Exit") //Выход?
-                {
-                    ActorSelection linkPoint = Context.ActorSelection(agentAddress);
-                    linkPoint.Tell(new ExitMessage(clientName));
-
-                    // Если это последний клиент в сети, то он отправляет историю агенту.
-                    if (addressList.Count == 0)
-                    {
-                        linkPoint.Tell(new HistoryMessage(getHistoryList()));
                     }
                 }
                 else
                 {
                     foreach (recordItem i in addressList)
                     {
-                        if (i.name != this.clientName && i.ID != this.clientID && i.name.Contains("agent"))
+                        if (!i.name.Contains("agent"))
                         {
                             i.address.Tell(new ReadMessage(clientName + ':' + message));
                         }
@@ -78,15 +67,9 @@ namespace Client
             {
                 Console.WriteLine(msg.text);
                 addToHistory(msg.text);
-                Sender.Tell(new DeliveryReportMessage());
 
             });
 
-            // Отчет о доставке сообщения.
-            Receive<DeliveryReportMessage>(msg =>
-            {
-                upgradeDeliveryReportCount();
-            });
 
             // Запрос на получение истории сообщений.
             Receive<RequestForHistoryMessage>(msg =>
@@ -105,10 +88,21 @@ namespace Client
                 }
             });
 
-            Receive<ErrorMessage>(msg =>
+            Receive<InfoMessage>(msg =>
             {
-                Console.WriteLine(msg.title);
                 Console.WriteLine(msg.text);
+            });
+
+            //получение запроса на разрегистрацию:
+            Receive<RemoveClientMessage>(msg =>
+            {
+                ActorSelection linkPoint = Context.ActorSelection(agentAddress);
+                linkPoint.Tell(new ClientOutMessage(new recordItem(this.clientID, this.clientName, Self)));
+
+                Console.WriteLine("Unreg.application has been sent!");
+
+                addressList.Clear();
+                historyList.Clear();
             });
 
             // Запрос на регистрацию
@@ -121,6 +115,8 @@ namespace Client
 
                 Console.WriteLine("Reg.application has been sent!");
             });
+
+
 
             //Регистрация
             Receive<RegMessage>(msg =>
@@ -179,6 +175,47 @@ namespace Client
                 else
                 {
                     Console.WriteLine("You must be registered!");
+                }
+
+            });
+
+            Receive<LogOutClientMessage>(msg =>
+            {
+                Console.WriteLine("I've got: " + msg.rItem.ToString());
+                for (int i = 0; i < addressList.Count; i++)
+                {
+                    if (addressList[i].name == msg.rItem.name && addressList[i].ID == msg.rItem.ID)
+                    {
+                        //удалить из списка данный элемент:
+                        addressList.Remove(addressList[i]);
+                    }
+
+                }
+                //addressList.Remove(msg.rItem);
+                Console.WriteLine(msg.rItem);
+                Console.WriteLine("Updated addressList:");
+
+                Console.WriteLine("Пользователь " + msg.rItem.name + " покинул чат");
+                foreach (recordItem i in addressList)
+                {
+                    Console.WriteLine(i.ToString());
+                }
+
+            });
+
+            //обновление списка для клиента:
+            Receive<LogOutClientAddressListMessage>(msg =>
+            {
+                addressList.Clear();
+                addressList = msg.Values.ToList<recordItem>();
+                
+                foreach (recordItem i in msg.Values)
+                {
+                    //рассылаем другим агентам измененный список:
+                    if (!isMySelf(i))
+                    {
+                        i.address.Tell(new LogOutClientMessage(new recordItem(this.clientID, this.clientName, Self)));
+                    }
                 }
 
             });
@@ -260,21 +297,14 @@ namespace Client
             return list;
         }
 
-        public bool checkDeliveryReportCount()
+        public bool isMySelf(recordItem item)
         {
-            return deliveryReportCount == addressList.Count + 1;
-        }
-
-        public void upgradeDeliveryReportCount()
-        {
-            deliveryReportCount++;
-
-            if (checkDeliveryReportCount())
+            if (item.ID == clientID && item.name == clientName)
             {
-                addToHistory(clientName + ':' + currentMessage);
-                currentMessage = "";
-                deliveryReportCount = 0;
+                return true;
             }
+
+            return false;
         }
 
 
