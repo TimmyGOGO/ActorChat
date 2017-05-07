@@ -38,20 +38,7 @@ namespace AgentHelper
                     while (line != null)
                     {
                         line = Console.ReadLine();
-
-                        //проверка сообщения:
-                        //1.проверка имени:
-                        //string[] splits = line.Split(new Char[] { '#' });
-                        //if (splits[1].Contains("agent") != true)
-                        //{
-                        //    localChatActor.Tell(line);
-
-                        //}
-                        //else
-                        //{
-                        //    Console.WriteLine("Change the name! It mustn't contain word 'agent'!");
-                        //}
-
+                        
                     }
 
                 }

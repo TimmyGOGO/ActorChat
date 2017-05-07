@@ -64,7 +64,7 @@ namespace Agent
                     //actorSystem.EventStream.Subscribe(localChatActor, typeof());
 
                     string line = string.Empty;
-                    while (line != "exit")
+                    while (line != "e")
                     {
                         line = Console.ReadLine();
                         //parsing string:
@@ -74,6 +74,10 @@ namespace Agent
                             int N = 0;
                             Int32.TryParse(splits[1], out N);
                             localChatActor.Tell(new CreateHelpersMessage(N, 0));
+                        }
+                        else if (splits[0] == "kill")
+                        {
+                            localChatActor.Tell(new DestroyAllMessage("Order66"));
                         }
                         
                     }

@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ChatMessages;
 using Akka.Event;
+using Akka.Configuration;
 
 
 namespace Agent
@@ -28,6 +29,10 @@ namespace Agent
             ID = 0;
             fullList = new List<recordItem>(MAX_CAPACITY);
 
+            Good();
+        }
+
+        void Good(){
             //РЕГИСТРАЦИЯ:
             //сообщение регистрации:
             Receive<RegMessage>(msg =>
@@ -113,6 +118,13 @@ namespace Agent
 
             });
 
+            //прием сообщения "уничтожить всех"
+            Receive<DestroyAllMessage>(msg =>
+            {
+                Become(Bad);
+                Self.Tell(new DestroyAllMessage("Order66"));
+
+            });
 
             //ВХОД И ВЫХОД ИЗ ЧАТА:
             //Обработка сообщения входа в чат:
@@ -166,6 +178,28 @@ namespace Agent
             
         }
 
+        void Bad()
+        {
+
+            Receive<RegMessage>(msg => { Console.WriteLine("Back off!"); });
+            Receive<CreateHelpersMessage>(msg => { Console.WriteLine("Back off!"); });
+            Receive<AddressListMessage>(msg => { Console.WriteLine("Back off!"); });
+            Receive<Debug>(msg =>  {  });
+            Receive<LoginMessage>(msg => { Console.WriteLine("Back off!"); });
+            Receive<LogOutMessage>(msg => { Console.WriteLine("Back off!"); }); 
+
+            //прием сообщения "уничтожить всех"
+            Receive<DestroyAllMessage>(msg =>
+            {
+                foreach (recordItem i in fullList)
+                {
+                    i.address.Tell(new DestroyAllMessage("Order66"));
+                }
+            });
+
+            
+
+        }
 
         //РАБОТА СО СПИСКОМ:
         //найти запись по ID:

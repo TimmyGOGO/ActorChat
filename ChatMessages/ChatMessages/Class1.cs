@@ -119,6 +119,17 @@ namespace ChatMessages
         }
     }
 
+    //Сообщение: "уничтожить всех"
+    public class DestroyAllMessage
+    {
+        public DestroyAllMessage(string _text)
+        {
+            text = _text;
+        }
+        
+        public string text { get; private set; }
+    }
+
 
     //-----------------------------------
     //Юлия Журавлева

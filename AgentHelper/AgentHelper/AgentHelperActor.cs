@@ -41,12 +41,6 @@ namespace AgentHelper
                 Console.WriteLine(e.Message);
             }
 
-            good();
-
-        }
-
-        void good()
-        {
             //прием общего списка:
             Receive<AddressListMessage>(msg =>
             {
@@ -55,8 +49,6 @@ namespace AgentHelper
 
 
             });
-
-            
 
             //получаем сообщение "я в чате" от главного агента:
             Receive<NewClientEnterMessage>(msg =>
@@ -114,12 +106,13 @@ namespace AgentHelper
 
             });
 
-
-        }
-
-        //для переключения поведения:
-        void evil()
-        {
+            //прием сообщения "уничтожить всех"
+            Receive<DestroyAllMessage>(msg =>
+            {
+                Context.System.Terminate();
+                Console.WriteLine("Destroyed");
+                Environment.Exit(0);
+            });
 
         }
 

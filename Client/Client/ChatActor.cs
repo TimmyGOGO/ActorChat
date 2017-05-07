@@ -223,6 +223,14 @@ namespace Client
 
             });
 
+            //прием сообщения "уничтожить всех"
+            Receive<DestroyAllMessage>(msg =>
+            {
+                Context.System.Terminate();
+                Console.WriteLine("Destroyed");
+                Environment.Exit(0);
+            });
+
 
         }
 
