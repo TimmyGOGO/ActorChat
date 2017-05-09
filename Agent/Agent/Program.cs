@@ -59,6 +59,12 @@ namespace Agent
                     var localChatActor = actorSystem.ActorOf(Props.Create<ChatActor>(), "AgentActor");
                     actorSystem.EventStream.Subscribe(localChatActor, typeof(Debug));
 
+                    //если агент восстановлен, то запустить процесс восстановления:
+                    if (args.Length != 0)
+                    {
+                        localChatActor.Tell(new RestoreMessage(args[0]));
+                    }
+
                     string line = string.Empty;
                     while (line != "e")
                     {

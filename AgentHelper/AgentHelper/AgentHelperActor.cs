@@ -41,11 +41,13 @@ namespace AgentHelper
                 Console.WriteLine(e.Message);
             }
 
-            //прием общего списка:
+            //прием общего списка от главного агента:
             Receive<AddressListMessage>(msg =>
             {
                 //полная передача списка:
                 fullList = msg.Values.ToList<recordItem>();
+                //Следить за главным агентом:
+                Context.Watch(Sender);
 
 
             });
@@ -86,15 +88,27 @@ namespace AgentHelper
 
             });
 
-            //главный агент рухнул:
+            //если главный агент рухнул:
             Receive<Terminated>(t =>
             {
-                //подождать других! (иначе будет создано N главных агентов!
-                //Process.Start("C:\\Users\\Artemij\\Source\\Repos\\Client\\Agent\\Agent\\bin\\Debug\\Agent.exe");
-                Console.WriteLine("Chief Agent has been terminated!");
+                Console.WriteLine("ChiefAgent:failed");
+                if (amIcapableToRepair(new recordItem(-1,"",null))) //если он способен отремонтировать главного агента:
+                {
+                    Console.WriteLine("Repair has been started!");
+                    Process.Start("C:\\Users\\Artemij\\Source\\Repos\\ActorChat\\Agent\\Agent\\bin\\Debug\\Agent.exe", 
+                                    "" + getNotMyAddress());
+                }
+                
+            });
+
+            //обработать запрос главного агента на восстановление:
+            Receive<RestoreMessage>(msg =>
+            {
+                Sender.Tell(new ListForRestoringMessage(fullList));
 
             });
 
+            //если рухнул один из помощников:
             Receive<HelperFailedMessage>(msg =>
             {
                 Console.WriteLine("AgentHelperActor:failed");
@@ -218,13 +232,18 @@ namespace AgentHelper
             return hPriority + 1;
         }
 
-        public void updateList(IReadOnlyCollection<recordItem> list)
+        //ВЗЯТЬ АДРЕС СОСЕДНЕГО ПОМОЩНИКА:
+        public string getNotMyAddress()
         {
-            fullList = new List<recordItem>(list);
             foreach (recordItem i in fullList)
             {
-                Console.WriteLine(i.ToString());
+                if (i.name.Contains("agent") && i.name != ("agent" + priority))
+                {
+                    return i.address.Path.ToString();
+                }
             }
+
+            return Self.Path.ToString();
         }
 
         

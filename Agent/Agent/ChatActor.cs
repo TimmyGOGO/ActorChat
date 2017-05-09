@@ -27,6 +27,7 @@ namespace Agent
         {
             //инициализироваться:
             ID = 0;
+            Nhelpers = 0;
             fullList = new List<recordItem>(MAX_CAPACITY);
 
             Good();
@@ -123,6 +124,42 @@ namespace Agent
             {
                 Become(Bad);
                 Self.Tell(new DestroyAllMessage("Order66"));
+
+            });
+
+            //прием собщения "восстановить"
+            Receive<RestoreMessage>(msg =>
+            {
+                //связаться с помощником и запросить восстановление:
+                var helper = Context.ActorSelection(msg.helper);
+                helper.Tell(new RestoreMessage(msg.helper));
+
+            });
+
+            //прием сообщения от помощника "список для восстановления"
+            Receive<ListForRestoringMessage>(msg =>
+            {
+                //восстанавливаем главный актор:
+                //общий список:
+                fullList = msg.Values.ToList<recordItem>();
+               
+                //наибольший ID, кол-во помощников:
+                ID = 0;
+                Nhelpers = 0;
+                foreach (recordItem i in fullList)
+                {
+                    if (ID < i.ID)
+                    {
+                        ID = i.ID;
+                    }
+                    if (i.name.Contains("agent"))
+                    {
+                        Nhelpers++;
+                    }
+                }
+                //актор для создания помощников:
+                actorHelper = Context.ActorOf(Props.Create<ActorHelper>(), "ActorHelper");
+                actorHelper.Tell(new ListForRestoringMessage(fullList));
 
             });
 

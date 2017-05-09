@@ -72,7 +72,7 @@ namespace Agent
             {
                 Console.WriteLine("All is ready");
 
-                //рассылаем список всем агентам:
+                //рассылаем список всем помощникам:
                 foreach (recordItem i in agentList)
                 {
                     i.address.Tell(new AddressListMessage(msg.Values.ToList<recordItem>()), Self);
@@ -117,6 +117,23 @@ namespace Agent
                 }
 
 
+            });
+
+            //прием сообщения от главного актора "список для восстановления"
+            Receive<ListForRestoringMessage>(msg =>
+            {
+                foreach (recordItem i in msg.Values)
+                {
+                    if (i.name.Contains("agent"))
+                    {
+                        agentList.Add(i);
+                        count++;
+                        i.address.Tell(new AddressListMessage(msg.Values.ToList<recordItem>()), Self);
+                    }
+                }
+                N = count;
+                chiefAgent = Sender; 
+                
             });
 
             Receive<ClientOutMessage>(msg =>

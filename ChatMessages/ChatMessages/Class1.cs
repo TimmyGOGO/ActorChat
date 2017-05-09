@@ -130,6 +130,28 @@ namespace ChatMessages
         public string text { get; private set; }
     }
 
+    //Сообщение: "восстановить"
+    public class RestoreMessage
+    {
+        public RestoreMessage(string _addr)
+        {
+            helper = _addr;
+        }
+
+        public string helper { get; private set; }
+    }
+
+    //Сообщение от помощника "список для восстановления":
+    public class ListForRestoringMessage
+    {
+        public ListForRestoringMessage(List<recordItem> list)
+        {
+            this.Values = list.AsReadOnly();
+        }
+
+        public IReadOnlyCollection<recordItem> Values { get; private set; }
+
+    }
 
     //-----------------------------------
     //Юлия Журавлева
