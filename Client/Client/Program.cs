@@ -26,8 +26,9 @@ namespace Client
                 {
 
                     var localChatActor = actorSystem.ActorOf(Props.Create<ChatActor>(), "ChatActor");
-                    
 
+
+                    bool Reg = false, Login = false;
                     if (localChatActor != null)
                     {
                         string line = string.Empty;
@@ -41,28 +42,52 @@ namespace Client
 
                             if (splits[0] == "reg") //зарегистрироваться
                             {
-                                if (splits[1].Contains("agent") != true)
+                                if (Reg == false)
                                 {
-                                    localChatActor.Tell(new NewClientMessage(splits[1]));
+                                    Reg = true; 
+                                    if (splits[1].Contains("agent") != true)
+                                    {
+                                        localChatActor.Tell(new NewClientMessage(splits[1]));
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Change the name! It mustn't contain word 'agent'!");
+                                    }
                                 }
                                 else
                                 {
-                                    Console.WriteLine("Change the name! It mustn't contain word 'agent'!");
-                                }
+                                    Console.WriteLine("You have already registered!");
+                                } 
+                                
                             }
                             else if (splits[0] == "logout") //выход из чата
                             {
-                                localChatActor.Tell(new LogOutMessage(0, splits[0]));
+                                if (Login == true)
+                                {
+                                    Login = false;
+                                    localChatActor.Tell(new LogOutMessage(0, splits[0]));
+                                }
+                                else { Console.WriteLine("You haven't entered the chat!"); } 
                                 
                             }
                             else if (splits[0] == "login") //вход в чат
                             {
-                                localChatActor.Tell(new LoginMessage(0, splits[0]));
-                               
-                            }
+                                if(Login == false)
+                                {
+                                    Login = true;
+                                    localChatActor.Tell(new LoginMessage(0, splits[0]));
+                                }
+                                else { Console.WriteLine("You have already entered the chat!"); }
+
+                            } 
                             else if (splits[0] == "unreg")
                             {
-                                localChatActor.Tell(new RemoveClientMessage(splits[0]));
+                                if (Reg == true)
+                                {
+                                    Reg = false;
+                                    localChatActor.Tell(new RemoveClientMessage(splits[0]));
+                                }
+                                else { Console.WriteLine("You haven't registered or logined! Please register!"); }
                             }
                             else //написать сообщение в чат:
                             {
