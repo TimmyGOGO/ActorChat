@@ -133,8 +133,6 @@ namespace Client
                 {
                     Console.WriteLine("Canceled: Change the name!");
                 }
-
-                Context.Watch(Sender);
               
                 
             });

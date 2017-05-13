@@ -7,6 +7,7 @@ using Akka.Actor;
 using ChatMessages;
 using System.Diagnostics;
 using Akka.Event;
+using Akka.Configuration;
 
 namespace AgentHelper
 {
@@ -46,8 +47,6 @@ namespace AgentHelper
             {
                 //полная передача списка:
                 fullList = msg.Values.ToList<recordItem>();
-                //Следить за главным агентом:
-                Context.Watch(Sender);
 
 
             });
@@ -89,14 +88,17 @@ namespace AgentHelper
             });
 
             //если главный агент рухнул:
-            Receive<Terminated>(t =>
+            Receive<Akka.Event.Debug>(msg =>
             {
-                Console.WriteLine("ChiefAgent:failed");
-                if (amIcapableToRepair(new recordItem(-1,"",null))) //если он способен отремонтировать главного агента:
+                string[] splits = msg.ToString().Split(new Char[] { ' ' });
+                if (splits[3].Contains("Disassociated") && splits[6].Contains("Agent") && splits[6].Contains("8000")) //проверяем, что вылетел агент!
                 {
-                    Console.WriteLine("Repair has been started!");
-                    Process.Start("C:\\Users\\Artemij\\Source\\Repos\\ActorChat\\Agent\\Agent\\bin\\Debug\\Agent.exe", 
-                                    "" + getNotMyAddress());
+                    if (amIcapableToRepair(new recordItem(-1, "", null))) //если он способен отремонтировать главного агента:
+                    {
+                        Console.WriteLine("Repair has been started!");
+                        Process.Start("C:\\Users\\Artemij\\Source\\Repos\\ActorChat\\Agent\\Agent\\bin\\Debug\\Agent.exe",
+                                        "" + getNotMyAddress());
+                    }
                 }
                 
             });

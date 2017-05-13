@@ -32,6 +32,7 @@ namespace AgentHelper
                     //адрес актора "Главного агента" (arg[0]) и имя (arg[1]):
 
                     var localChatActor = actorSystem.ActorOf(Props.Create<AgentHelperActor>(args[0], args[1]), "AgentHelperActor");
+                    actorSystem.EventStream.Subscribe(localChatActor, typeof(Debug));
                     //var localChatActor = actorSystem.ActorOf(Props.Create<AgentHelperActor>("akka.tcp://Agent@localhost:8000/user/AgentActor/ActorHelper", 2+""), "AgentHelperActor");
 
                     string line = string.Empty;
