@@ -94,7 +94,6 @@ namespace ClientGUI
             Receive<AddressListMessage>(msg =>
             {
                 addressList.Clear();
-                formExplorer.chatWindow.Text = "";
                 formExplorer.listOfClients.Text = "";
                 IReadOnlyCollection<recordItem> list = msg.Values;
 
@@ -122,8 +121,14 @@ namespace ClientGUI
 
                 }
 
-                //после того, как все получили: берем историю:
-                Self.Tell(new WriteMessage("history"));
+                foreach (recordItem f in msg.Values)
+                {
+                    if (!f.name.Contains("agent") && !isMySelf(f))
+                    {
+                        f.address.Tell(new RequestForHistoryMessage());
+                        break;
+                    }
+                }
 
             });
 
@@ -133,19 +138,19 @@ namespace ClientGUI
             {
                 string message = msg.text;
 
-                if (message == "history") //запрос истории у первого попавшегося клиента
-                {
-                    foreach (recordItem i in addressList)
-                    {
-                        if (!i.name.Contains("agent") && !isMySelf(i))
-                        {
-                            i.address.Tell(new RequestForHistoryMessage());
-                            break;
-                        }
-                    }
-                }
-                else //сообщение клиента другим клиентам:
-                {
+                //if (message == "history") //запрос истории у первого попавшегося клиента
+                //{
+                //    foreach (recordItem i in addressList)
+                //    {
+                //        if (!i.name.Contains("agent") && !isMySelf(i))
+                //        {
+                //            i.address.Tell(new RequestForHistoryMessage());
+                //            break;
+                //        }
+                //    }
+                //}
+                //else //сообщение клиента другим клиентам:
+                //{
                     foreach (recordItem i in addressList)
                     {
                         if (!i.name.Contains("agent"))
@@ -156,7 +161,7 @@ namespace ClientGUI
                     }
 
                     currentMessage = message;
-                }
+                //}
             });
 
             //прием сообщения от другого клиента:
@@ -174,14 +179,23 @@ namespace ClientGUI
 
             });
 
-            //Получение истории сообщений.
+            // Получение истории сообщений.
             Receive<HistoryMessage>(msg =>
             {
-                // выводит полученную историю на экран
-                string[] splits = msg.history.Split(new Char[] { '#' });
+                string[] splits = msg.history.Split(new Char[] { '#' }, StringSplitOptions.RemoveEmptyEntries);
+
                 for (int i = 0; i < splits.Count(); i++)
                 {
-                    formExplorer.chatWindow.Text += splits[i] + "\n";
+                    // выводит полученную историю на экран 
+                    //formExplorer.chatWindow.Text += "" + splits[i];
+
+                    //парсим:
+                    string[] split = splits[i].Split(new Char[] { '$' }, StringSplitOptions.RemoveEmptyEntries);
+                    addToHistory(split[1]);
+                    
+                    formExplorer.chatWindow.Text += "" + split[1] + "\n";
+                    //Console.WriteLine("split[1]");
+                    //formExplorer.chatWindow.Text += "add to history:  {0}", split[1]);
                 }
             });
 
@@ -318,6 +332,12 @@ namespace ClientGUI
                 ActorSelection linkPoint = Context.ActorSelection(agentAddress);
                 linkPoint.Tell(new ClientOutMessage(new recordItem(this.clientID, this.clientName, Self)));
 
+                // если последний, то отправить Агенту историю
+                if (isIamLast())
+                {
+                    linkPoint.Tell(new HistoryMessage(getHistoryList()));
+                }
+
                 MessageBox.Show("Unreg.application has been sent!");
 
                 addressList.Clear();
@@ -329,6 +349,62 @@ namespace ClientGUI
                 formExplorer.textRegName.Enabled = true;
 
             });
+
+            //обновление списка для клиента:
+            Receive<UnregClientAddressListMessage>(msg =>
+            {
+                addressList.Clear();
+                addressList = msg.Values.ToList<recordItem>();
+
+                foreach (recordItem i in msg.Values)
+                {
+                    //рассылаем другим агентам измененный список:
+                    if (!isMySelf(i) && !i.name.Contains("agent"))
+                    {
+                        i.address.Tell(new UnregClientMessage(new recordItem(this.clientID, this.clientName, Self)));
+                    }
+                }
+
+            });
+
+            // сообщение об удаление аккаунта одного из клиентов.
+            Receive<UnregClientMessage>(msg =>
+            {
+                Console.WriteLine("I've got: " + msg.rItem.ToString());
+                for (int i = 0; i < addressList.Count; i++)
+                {
+                    if (addressList[i].name == msg.rItem.name && addressList[i].ID == msg.rItem.ID)
+                    {
+                        //удалить из списка данный элемент:
+                        addressList.RemoveAt(i);
+                    }
+
+                }
+                //addressList.Remove(msg.rItem);
+                //Console.WriteLine(msg.rItem);
+                //Console.WriteLine("Updated addressList:");
+
+                //Console.WriteLine("Пользователь " + msg.rItem.name + " удалил свой аккаунт");
+                //foreach (recordItem i in addressList)
+                //{
+                //    Console.WriteLine(i.ToString());
+                //}
+
+                formExplorer.chatWindow.Text += msg.rItem.name + " unregistered the chat!\n";
+                formExplorer.chatWindow.Text += "List of Clients updated!\n";
+                formExplorer.listOfClients.Text = "";
+
+                foreach (recordItem i in addressList)
+                {
+                    if (!i.name.Contains("agent") && i.address != null)
+                    {
+                        formExplorer.listOfClients.Text += i.name.ToString() + "\n";
+                    }
+
+                }
+
+            });
+
 
             //УНИЧТОЖЕНИЕ:
             //прием сообщения "уничтожить всех"
@@ -376,6 +452,23 @@ namespace ClientGUI
             }
 
             return false;
+        }
+
+        // Проверка на наличие других онлайн-клиентов с списке адресов.
+        public bool isIamLast()
+        {
+            bool flag = true;
+
+            foreach (recordItem f in addressList)
+            {
+                // Если есть еще клиент онлайн
+                if (!isMySelf(f) && !f.name.Contains("agent"))
+                {
+                    flag = false;
+                }
+            }
+
+            return flag;
         }
 
     }

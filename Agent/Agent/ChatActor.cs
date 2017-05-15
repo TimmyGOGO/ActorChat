@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using ChatMessages;
 using Akka.Event;
 using Akka.Configuration;
+using System.IO;
 
 
 namespace Agent
@@ -200,6 +201,9 @@ namespace Agent
                     if (curr.name == msg.rItem.name && curr.ID == msg.rItem.ID)
                     {
                         fullList.RemoveAt(i);
+
+                        //отправляем список чтобы разослать всем онлайн клиентам
+                        Sender.Tell(new UnregClientAddressListMessage(fullList), Self);
                         //уведомляем помощников:
                         actorHelper.Tell(new ClientOutMessage(curr));
                         break;
@@ -207,14 +211,14 @@ namespace Agent
                 }
 
                 //рассылаем остальным клиентам обновленный список:
-                foreach (recordItem i in fullList)
-                {
-                    //рассылаем другим измененный список:
-                    if (!i.name.Contains("agent"))
-                    {
-                        i.address.Tell(new LogOutClientMessage(new recordItem(msg.rItem.ID, msg.rItem.name, Self)));
-                    }
-                }
+                //foreach (recordItem i in fullList)
+                //{
+                //    //рассылаем другим измененный список:
+                //    if (!i.name.Contains("agent"))
+                //    {
+                //        i.address.Tell(new LogOutClientMessage(new recordItem(msg.rItem.ID, msg.rItem.name, Self)));
+                //    }
+                //}
 
                 //Изменения в списке:
                 Console.WriteLine("List's been changed!");
@@ -238,6 +242,26 @@ namespace Agent
                 {
                     if (fullList[i].name == msg.name && fullList[i].ID == msg.ID)
                     {
+                        //отправить историю, если он единственный онлайн
+                        if (isFirstOnlineClient(fullList[i]))
+                        {
+                            StreamReader f = new StreamReader("History.txt");
+                            Console.WriteLine("Read history from file");
+                            string historyString = "";
+                            string currentString = f.ReadLine();
+
+                            while ((currentString != null && currentString != "\n"))
+                            {
+                                historyString += currentString;
+                                historyString += "#";
+                                currentString = f.ReadLine();
+                            }
+
+                            f.Close();
+
+                            Sender.Tell(new HistoryMessage(historyString));
+                        }
+
                         //удалить из списка данный элемент:
                         fullList.Remove(fullList[i]);
                         //вставить новый с такими же ID и name, и новым адресом:
@@ -261,6 +285,32 @@ namespace Agent
                 }
 
 
+            });
+
+            //прием истории сообщений от последнего клиента онлайн
+            Receive<HistoryMessage>(msg =>
+            {
+                string[] splits = msg.history.Split(new Char[] { '#' });
+
+                try
+                {
+                    StreamWriter f = new StreamWriter("History.txt");
+
+                    for (int i = 0; i < splits.Count(); i++)
+                    {
+                        f.WriteLine(splits[i]);
+                    }
+
+                    f.Close();
+
+                    Console.WriteLine("I'm wrote history");
+
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Error StreamWriter: " + e.Message);
+                    return;
+                }
             });
 
             //ВЫХОД КЛИЕНТА из чата
@@ -351,6 +401,23 @@ namespace Agent
             }
 
             return false;
+        }
+
+        // проверка на первого клиента-онлайн
+        public bool isFirstOnlineClient(recordItem client)
+        {
+            bool flag = true;
+
+            foreach (recordItem f in fullList)
+            {
+                // Если есть еще клиенты онлайн
+                if (!f.name.Contains("agent") && f.address != null && client.ID != f.ID && client.name != f.name)
+                {
+                    flag = false;
+                }
+            }
+
+            return flag;
         }
 
        

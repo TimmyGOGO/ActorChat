@@ -178,7 +178,7 @@ namespace ChatMessages
 
         public override string ToString()
         {
-            return String.Format("{0} {1}", this.number, this.text);
+            return String.Format("{0}${1}", this.number, this.text);
         }
 
     }
@@ -283,6 +283,32 @@ namespace ChatMessages
         }
 
         public string name { get; private set; }
+    }
+
+    // сообщение разрегистрации клиента.
+    public class UnregClientMessage
+    {
+        public UnregClientMessage(recordItem item)
+        {
+            this.rItem = new recordItem(item.ID, item.name, item.address);
+        }
+
+        public recordItem rItem { get; private set; }
+
+        public override string ToString()
+        {
+            return this.rItem.ToString();
+        }
+    }
+
+    public class UnregClientAddressListMessage
+    {
+        public UnregClientAddressListMessage(List<recordItem> list)
+        {
+            this.Values = list.AsReadOnly();
+        }
+
+        public IReadOnlyCollection<recordItem> Values { get; private set; }
     }
 
     // Информационное сообщение.
