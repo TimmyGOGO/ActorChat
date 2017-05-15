@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using ChatMessages;
 using Akka.Util;
 using System.Windows.Forms;
+using Akka.Event;
 
 
 namespace ClientGUI
@@ -200,7 +201,11 @@ namespace ClientGUI
                 formExplorer.listOfClients.Text = "";
                 foreach (recordItem i in addressList)
                 {
-                    formExplorer.listOfClients.Text += i.name.ToString() + "\n";
+                    if (!i.name.Contains("agent"))
+                    {
+                        formExplorer.listOfClients.Text += i.name.ToString() + "\n";
+                    }
+                    
                 }
 
             });
@@ -232,7 +237,7 @@ namespace ClientGUI
                     if (addressList[i].name == msg.rItem.name && addressList[i].ID == msg.rItem.ID)
                     {
                         //удалить из списка данный элемент:
-                        addressList.Remove(addressList[i]);
+                        addressList.RemoveAt(i);
                     }
 
                 }
@@ -253,7 +258,7 @@ namespace ClientGUI
 
             });
 
-            //обновление списка для клиента:
+            //обновление списка для клиентов:
             Receive<LogOutClientAddressListMessage>(msg =>
             {
                 addressList.Clear();
@@ -265,6 +270,42 @@ namespace ClientGUI
                     if (!isMySelf(i))
                     {
                         i.address.Tell(new LogOutClientMessage(new recordItem(this.clientID, this.clientName, Self)));
+                    }
+                }
+
+            });
+
+            //ВЫЛЕТ КЛИЕНТА ИЗ ЧАТА:
+            //поймать мертвое сообщение:
+            Receive<Debug>(msg =>
+            {
+                string[] splits = msg.ToString().Split(new Char[] { ' ' });
+                if (splits[3].Contains("Disassociated") && splits[6].Contains("Client")) //проверяем, что вылетел клиент!
+                {
+                    Console.WriteLine("{0} is Dead!", splits[6]);
+                    for (int i = 0; i < addressList.Count; i++)
+                    {
+                        if (addressList[i].address.ToString().Contains(splits[6])) //найдем мертвого клиента
+                        {
+                            formExplorer.chatWindow.Text += addressList[i].name + " left the chat!\n";
+                            formExplorer.chatWindow.Text += "List of Clients updated!\n";
+                            formExplorer.listOfClients.Text = "";
+                            
+                            //удаляем клиента:
+                            addressList.RemoveAt(i);
+
+                            foreach (recordItem cl in addressList)
+                            {
+                                if (!cl.name.Contains("agent") && cl.address != null)
+                                {
+                                    formExplorer.listOfClients.Text += cl.name.ToString() + "\n";
+                                }
+
+                            }
+                            break;
+
+                        }
+
                     }
                 }
 

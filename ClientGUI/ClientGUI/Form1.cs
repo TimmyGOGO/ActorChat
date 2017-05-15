@@ -11,6 +11,7 @@ using System.Configuration;
 using Akka.Actor;
 using ChatMessages;
 using Akka.Configuration;
+using Akka.Event;
 
 namespace ClientGUI
 {
@@ -47,6 +48,7 @@ namespace ClientGUI
         private void Form1_Load(object sender, EventArgs e)
         {
             chatActor = Program.ClientActors.ActorOf(Props.Create(() => new ChatActor(this)), "ChatActor");
+            Program.ClientActors.EventStream.Subscribe(chatActor, typeof(Debug));
             
         }
 
@@ -88,6 +90,7 @@ namespace ClientGUI
             if (Reg == true)
             {
                 Reg = false;
+                Login = false;
                 chatActor.Tell(new RemoveClientMessage(clientName));
             }
             else 

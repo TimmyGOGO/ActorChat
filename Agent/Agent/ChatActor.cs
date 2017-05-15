@@ -115,7 +115,34 @@ namespace Agent
 
                     }
                 }
-                
+                else if (splits[3].Contains("Disassociated") && splits[6].Contains("Client")) //проверяем, что вылетел клиент!
+                {
+                    Console.WriteLine("{0} is Dead!", splits[6]);
+                    for (int i = 0; i < fullList.Count; i++)
+                    {
+                        if (fullList[i].address.ToString().Contains(splits[6])) //найдем мертвого клиента:
+                        {
+                            //удалить из списка данный элемент:
+                            recordItem curr = new recordItem(fullList[i].ID, fullList[i].name, null);
+                            fullList.RemoveAt(i);
+                            //вставить новый с такими же ID и name, и новым адресом:
+                            fullList.Add(curr);
+
+                            //Изменения в списке:
+                            Console.WriteLine("List's been changed!");
+                            foreach (recordItem f in fullList)
+                            {
+                                Console.WriteLine(f.ToString());
+                            }
+
+                            //отправляем нового клиента помощникам (передаем задачу актору для работы с помощниками):
+                            actorHelper.Tell(new LogOutClientMessage(curr));
+                            break;
+
+                        }
+
+                    }
+                }
 
             });
 
@@ -173,8 +200,19 @@ namespace Agent
                     if (curr.name == msg.rItem.name && curr.ID == msg.rItem.ID)
                     {
                         fullList.RemoveAt(i);
+                        //уведомляем помощников:
                         actorHelper.Tell(new ClientOutMessage(curr));
                         break;
+                    }
+                }
+
+                //рассылаем остальным клиентам обновленный список:
+                foreach (recordItem i in fullList)
+                {
+                    //рассылаем другим измененный список:
+                    if (!i.name.Contains("agent"))
+                    {
+                        i.address.Tell(new LogOutClientMessage(new recordItem(msg.rItem.ID, msg.rItem.name, Self)));
                     }
                 }
 
@@ -225,7 +263,7 @@ namespace Agent
 
             });
 
-            //выход клиента из чата
+            //ВЫХОД КЛИЕНТА из чата
             Receive<LogOutMessage>(msg =>
             {
                 //нужно изменить статус клиента и разослать список
